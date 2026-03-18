@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Cardone Loans & Grants"
+version = "1.0.0"
+id = "artifacts/cardone-loans"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+localPort = 19000
+name = "web"
+paths = ["/"]
+
+[services.development]
+run = "pnpm --filter @workspace/cardone-loans run dev"
+
+[services.env]
+PORT = "19000"
+BASE_PATH = "/"
+
+[services.production]
+build = ["pnpm", "--filter", "@workspace/cardone-loans", "run", "build"]
+publicDir = "artifacts/cardone-loans/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"

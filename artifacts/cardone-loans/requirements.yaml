@@ -1,0 +1,18 @@
+packages:
+  "framer-motion": "For premium page transitions and smooth reveal animations"
+  "recharts": "For the admin dashboard statistics charts"
+  "date-fns": "For formatting dates nicely in application timelines"
+  "clsx": "Utility for conditionally joining classNames"
+  "tailwind-merge": "Utility for merging tailwind classes without style conflicts"
+
+images:
+  - path: "artifacts/cardone-loans/public/images/hero-abstract.png"
+    description: "Abstract architectural rendering with glass panels and subtle gold reflections in a deep navy blue environment, professional corporate fintech aesthetic, high quality 3d render"
+    aspect_ratio: "16:9"
+  - path: "artifacts/cardone-loans/public/images/logo-mark.png"
+    description: "Minimalist geometric logo mark featuring an abstract letter C in deep navy blue and emerald green with a hint of gold, transparent background, corporate identity"
+    aspect_ratio: "1:1"
+
+notes:
+  - Using generated react-query hooks from @workspace/api-client-react
+  - The application submission is a two-part process: 1. Create Application -> 2. Submit Payment Code to the newly created application ID.

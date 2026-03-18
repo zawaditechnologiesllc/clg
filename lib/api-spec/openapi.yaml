@@ -1,0 +1,689 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: Cardone Loans & Grants API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: auth
+    description: Authentication operations
+  - name: applications
+    description: Loan and grant applications
+  - name: notifications
+    description: User notifications
+  - name: admin
+    description: Admin operations
+  - name: documents
+    description: Document uploads
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /auth/register:
+    post:
+      operationId: register
+      tags: [auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /applications:
+    get:
+      operationId: getApplications
+      tags: [applications]
+      summary: Get user's applications
+      responses:
+        "200":
+          description: List of applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Application"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      operationId: createApplication
+      tags: [applications]
+      summary: Submit a new application
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateApplicationRequest"
+      responses:
+        "201":
+          description: Application created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /applications/{id}:
+    get:
+      operationId: getApplication
+      tags: [applications]
+      summary: Get a specific application
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Application details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /applications/{id}/payment:
+    post:
+      operationId: submitPayment
+      tags: [applications]
+      summary: Submit M-Pesa payment code for an application
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentRequest"
+      responses:
+        "200":
+          description: Payment submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /notifications:
+    get:
+      operationId: getNotifications
+      tags: [notifications]
+      summary: Get user notifications
+      responses:
+        "200":
+          description: List of notifications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /notifications/{id}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [notifications]
+      summary: Mark a notification as read
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Notification marked read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Notification"
+
+  /notifications/read-all:
+    post:
+      operationId: markAllNotificationsRead
+      tags: [notifications]
+      summary: Mark all notifications as read
+      responses:
+        "200":
+          description: All marked read
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+
+  /admin/applications:
+    get:
+      operationId: adminGetApplications
+      tags: [admin]
+      summary: Admin - get all applications
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [loan, grant]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, under_review, approved, rejected]
+      responses:
+        "200":
+          description: All applications
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ApplicationWithUser"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/applications/{id}/approve:
+    post:
+      operationId: approveApplication
+      tags: [admin]
+      summary: Admin - approve application
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminActionRequest"
+      responses:
+        "200":
+          description: Application approved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/applications/{id}/reject:
+    post:
+      operationId: rejectApplication
+      tags: [admin]
+      summary: Admin - reject application
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminActionRequest"
+      responses:
+        "200":
+          description: Application rejected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/stats:
+    get:
+      operationId: adminGetStats
+      tags: [admin]
+      summary: Admin - get dashboard statistics
+      responses:
+        "200":
+          description: Dashboard stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminStats"
+        "403":
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    MessageResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
+
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+        fullName:
+          type: string
+      required:
+        - email
+        - password
+        - fullName
+
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+      required:
+        - email
+        - password
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        email:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+          enum: [user, admin]
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - email
+        - fullName
+        - role
+        - createdAt
+
+    AuthResponse:
+      type: object
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        message:
+          type: string
+      required:
+        - user
+        - message
+
+    CreateApplicationRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [loan, grant]
+        category:
+          type: string
+          enum: [personal, business]
+        amountRequested:
+          type: number
+        fullName:
+          type: string
+        nationalId:
+          type: string
+        phoneNumber:
+          type: string
+        employmentStatus:
+          type: string
+        monthlyIncome:
+          type: number
+        purposeOfFunds:
+          type: string
+        businessName:
+          type: string
+        registrationNumber:
+          type: string
+        kraPin:
+          type: string
+        businessType:
+          type: string
+        annualRevenue:
+          type: number
+        ownerDetails:
+          type: string
+      required:
+        - type
+        - category
+        - amountRequested
+        - purposeOfFunds
+
+    Application:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        type:
+          type: string
+          enum: [loan, grant]
+        category:
+          type: string
+          enum: [personal, business]
+        amountRequested:
+          type: number
+        preapprovedAmount:
+          type: number
+          nullable: true
+        status:
+          type: string
+          enum: [pending, under_review, approved, rejected]
+        paymentCode:
+          type: string
+          nullable: true
+        fullName:
+          type: string
+          nullable: true
+        nationalId:
+          type: string
+          nullable: true
+        phoneNumber:
+          type: string
+          nullable: true
+        employmentStatus:
+          type: string
+          nullable: true
+        monthlyIncome:
+          type: number
+          nullable: true
+        purposeOfFunds:
+          type: string
+          nullable: true
+        businessName:
+          type: string
+          nullable: true
+        registrationNumber:
+          type: string
+          nullable: true
+        kraPin:
+          type: string
+          nullable: true
+        businessType:
+          type: string
+          nullable: true
+        annualRevenue:
+          type: number
+          nullable: true
+        ownerDetails:
+          type: string
+          nullable: true
+        adminComment:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - type
+        - category
+        - amountRequested
+        - status
+        - createdAt
+        - updatedAt
+
+    ApplicationWithUser:
+      allOf:
+        - $ref: "#/components/schemas/Application"
+        - type: object
+          properties:
+            userEmail:
+              type: string
+            userFullName:
+              type: string
+          required:
+            - userEmail
+            - userFullName
+
+    PaymentRequest:
+      type: object
+      properties:
+        paymentCode:
+          type: string
+      required:
+        - paymentCode
+
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        message:
+          type: string
+        read:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - userId
+        - message
+        - read
+        - createdAt
+
+    AdminActionRequest:
+      type: object
+      properties:
+        reason:
+          type: string
+      required:
+        - reason
+
+    AdminStats:
+      type: object
+      properties:
+        totalApplications:
+          type: integer
+        pendingApplications:
+          type: integer
+        approvedApplications:
+          type: integer
+        rejectedApplications:
+          type: integer
+        underReviewApplications:
+          type: integer
+        totalLoans:
+          type: integer
+        totalGrants:
+          type: integer
+        recentApplications:
+          type: array
+          items:
+            $ref: "#/components/schemas/ApplicationWithUser"
+      required:
+        - totalApplications
+        - pendingApplications
+        - approvedApplications
+        - rejectedApplications
+        - underReviewApplications
+        - totalLoans
+        - totalGrants
+        - recentApplications

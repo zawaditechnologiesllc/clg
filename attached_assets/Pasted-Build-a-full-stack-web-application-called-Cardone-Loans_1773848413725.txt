@@ -1,0 +1,334 @@
+Build a full-stack web application called **Cardone Loans & Grants** using modern scalable architecture. The platform connects Kenyan individuals and businesses with U.S.-based funding providers (loans and grants), acting as an intermediary that handles onboarding, KYC/KYB verification, and application processing.
+
+---
+
+## 🌐 GENERAL SETUP
+
+* Domain: cardoneloansgrants.org
+* Support Email: [info@cardoneloansgrants.org](mailto:info@cardoneloansgrants.org)
+* Support Phone: +1 254-528-9454
+* Company Address: 17325 Castellammare Dr, Pacific Palisades, CA 90272
+
+---
+
+## 🧠 TECH STACK
+
+Frontend:
+
+* React (Next.js recommended for Vercel deployment)
+* Tailwind CSS (clean corporate design)
+* Zustand or Context API for state management
+
+Backend:
+
+* Supabase (Authentication + Database + Realtime)
+* Supabase Project ID: wefoetwzntvrqmpndwlx
+* Supabase Public Anon Key: (already provided)
+
+Deployment:
+
+* GitHub repo auto-created from Replit
+* Deploy on Vercel
+
+---
+
+## 🎨 DESIGN SYSTEM
+
+Use a professional financial color palette:
+
+* Primary: Deep Navy Blue (#0B1F3A)
+* Secondary: Emerald Green (#1FA67A)
+* Accent: Gold (#D4AF37)
+* Background: Light Gray (#F5F7FA)
+* Text: Dark Gray (#1A1A1A)
+
+Design style:
+
+* Clean, corporate, fintech-grade UI
+* Smooth transitions
+* Dashboard-style layout
+* Mobile-first responsive
+
+---
+
+## 👤 USER ROLES
+
+1. Applicant (User)
+2. Admin
+
+---
+
+## 🔐 AUTHENTICATION
+
+* Supabase Auth (email/password)
+* Separate dashboards for:
+
+  * Users
+  * Admin
+
+---
+
+## 🧾 PRODUCTS STRUCTURE
+
+### Grants
+
+Personal Grant:
+
+* Range: $2,000 – $10,000
+* Processing Fee: $10
+
+Business Grant:
+
+* Range: $5,000 – $30,000
+* Processing Fee: $20
+
+---
+
+### Loans
+
+Personal Loan:
+
+* Range: $10,000 – $50,000
+* Processing Fee: $20
+
+Business Loan:
+
+* Range: $20,000 – $100,000
+* Processing Fee: $50
+
+---
+
+## 💳 MPESA PAYMENT FLOW (MANUAL)
+
+Explain clearly in UI:
+
+**How to Pay Processing Fee:**
+
+1. Go to M-Pesa menu
+2. Select “Lipa na M-Pesa”
+3. Select “Paybill”
+4. Enter Business Number: 4167853
+5. Enter Account Number: (Use your Application ID)
+6. Enter Amount (based on selected product)
+7. Enter M-Pesa PIN and confirm
+8. Submit transaction code in the application form
+
+---
+
+## 📄 APPLICATION FLOW
+
+### Step 1: Select Product
+
+* Personal Grant
+* Business Grant
+* Personal Loan
+* Business Loan
+
+---
+
+### Step 2: Fill Application Form
+
+#### Personal (Loan/Grant)
+
+* Full Name
+* National ID / Passport
+* Phone Number
+* Email
+* Employment Status
+* Monthly Income
+* Purpose of funds
+* Amount Requested
+* Upload ID Document
+
+---
+
+#### Business (Loan/Grant)
+
+* Business Name
+* Registration Number
+* KRA PIN
+* Business Type
+* Annual Revenue
+* Owner Details
+* Purpose of funds
+* Amount Requested
+* Upload Business Documents
+
+---
+
+### Step 3: Payment Submission
+
+* Upload M-Pesa transaction code
+* Confirm payment
+
+---
+
+### Step 4: Status
+
+* Show:
+
+  * “Application Received”
+  * “Under Review”
+  * “Approved” / “Rejected”
+
+---
+
+## ⚡ SPECIAL LOGIC
+
+* If user applies for a loan:
+  → Automatically show **65% pre-approval** of requested amount immediately after submission
+
+Example:
+User applies for $10,000 → Show: “Pre-approved for $6,500”
+
+---
+
+## ⏱️ TIMELINES
+
+* Approval: 2–3 days
+* Disbursement: 14 days after approval
+
+Display this clearly in UI.
+
+---
+
+## 🔔 NOTIFICATIONS SYSTEM
+
+User Dashboard:
+
+* Notification bar (real-time via Supabase)
+* Show:
+
+  * Application updates
+  * Approval/rejection messages
+  * Admin comments
+
+---
+
+## 🛠️ ADMIN PANEL
+
+Admin must be able to:
+
+* View all applications
+* Filter by:
+
+  * Type (Loan/Grant)
+  * Status
+* Open application details
+* Approve / Reject applications
+* Add mandatory comment/reason for decision
+* Trigger notifications to user
+
+---
+
+## 🧱 DATABASE STRUCTURE (SUPABASE)
+
+Tables:
+
+1. users
+
+* id
+* email
+* role (user/admin)
+
+2. applications
+
+* id
+* user_id
+* type (loan/grant)
+* category (personal/business)
+* amount_requested
+* preapproved_amount
+* status (pending/approved/rejected)
+* payment_code
+* created_at
+
+3. documents
+
+* id
+* application_id
+* file_url
+* type
+
+4. notifications
+
+* id
+* user_id
+* message
+* read (boolean)
+* created_at
+
+5. admin_actions
+
+* id
+* application_id
+* admin_id
+* action (approved/rejected)
+* reason
+* timestamp
+
+---
+
+## 📊 USER DASHBOARD
+
+Display:
+
+* Applications list
+* Status indicators
+* Pre-approval amount (for loans)
+* Notifications panel
+
+---
+
+## 🧑‍💼 ADMIN DASHBOARD
+
+Display:
+
+* Total applications
+* Pending approvals
+* Approved/rejected stats
+* Recent activity feed
+
+---
+
+## 🔒 SECURITY
+
+* Validate all uploads
+* Protect routes (auth-based)
+* Prevent duplicate submissions
+* Rate limit form submissions
+
+---
+
+## 🚀 DEPLOYMENT FLOW
+
+1. Build in Replit
+2. Push to GitHub
+3. Connect GitHub repo to Vercel
+4. Add domain: cardoneloansgrants.org
+5. Configure environment variables for Supabase
+
+---
+
+## 📢 FINAL UX TOUCHES
+
+* Trust badges (secure, verified, compliant)
+* FAQ section
+* “How it works” section
+* Clear disclaimers:
+  → Platform is an intermediary, not a direct lender
+
+---
+
+## 🎯 GOAL
+
+Deliver a clean, scalable fintech platform that:
+
+* Converts users
+* Automates application handling
+* Enables admin control
+* Builds trust with structured flow
+
+---
+
+Ensure the app is production-ready, responsive, and optimized for performance.
