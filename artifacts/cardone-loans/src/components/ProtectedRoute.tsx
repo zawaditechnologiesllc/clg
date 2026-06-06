@@ -9,11 +9,7 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
-  const { data: user, isLoading, error } = useGetMe({
-    query: {
-      retry: false
-    }
-  })
+  const { data: user, isLoading, error } = useGetMe()
   const [, setLocation] = useLocation()
 
   useEffect(() => {
