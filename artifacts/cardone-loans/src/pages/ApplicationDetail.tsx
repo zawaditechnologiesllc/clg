@@ -1,4 +1,4 @@
-import { useGetApplication } from "@workspace/api-client-react"
+import { useGetApplication, getGetApplicationQueryKey } from "@workspace/api-client-react"
 import { useRoute } from "wouter"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -20,7 +20,7 @@ export function ApplicationDetail() {
   const [, params] = useRoute("/applications/:id")
   const id = Number(params?.id)
   
-  const { data: app, isLoading } = useGetApplication(id, { query: { enabled: !!id } })
+  const { data: app, isLoading } = useGetApplication(id, { query: { queryKey: getGetApplicationQueryKey(id), enabled: !!id } })
 
   if (isLoading) return <div className="flex h-[50vh] items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" /></div>
   if (!app) return <div className="p-12 text-center">Application not found</div>

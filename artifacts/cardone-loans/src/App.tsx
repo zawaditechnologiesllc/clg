@@ -11,7 +11,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Pages
 import Home from "@/pages/Home";
-import { Login, Register } from "@/pages/Auth";
+import { Login, Register, ConfirmEmail, ForgotPassword, ResetPassword } from "@/pages/Auth";
 import { Apply } from "@/pages/Apply";
 import { UserDashboard } from "@/pages/Dashboard";
 import { ApplicationDetail } from "@/pages/ApplicationDetail";
@@ -33,47 +33,31 @@ function Router() {
       <Navbar />
       <main className="flex-grow">
         <Switch>
+          {/* Public */}
           <Route path="/" component={Home} />
           <Route path="/login" component={Login} />
           <Route path="/register" component={Register} />
-          
+          <Route path="/confirm-email" component={ConfirmEmail} />
+          <Route path="/forgot-password" component={ForgotPassword} />
+          <Route path="/reset-password" component={ResetPassword} />
+
           {/* Protected User Routes */}
           <Route path="/apply">
-            {() => (
-              <ProtectedRoute>
-                <Apply />
-              </ProtectedRoute>
-            )}
+            {() => <ProtectedRoute><Apply /></ProtectedRoute>}
           </Route>
           <Route path="/dashboard">
-            {() => (
-              <ProtectedRoute>
-                <UserDashboard />
-              </ProtectedRoute>
-            )}
+            {() => <ProtectedRoute><UserDashboard /></ProtectedRoute>}
           </Route>
           <Route path="/applications/:id">
-            {() => (
-              <ProtectedRoute>
-                <ApplicationDetail />
-              </ProtectedRoute>
-            )}
+            {() => <ProtectedRoute><ApplicationDetail /></ProtectedRoute>}
           </Route>
 
           {/* Protected Admin Routes */}
           <Route path="/admin">
-            {() => (
-              <ProtectedRoute requireAdmin>
-                <AdminDashboard />
-              </ProtectedRoute>
-            )}
+            {() => <ProtectedRoute requireAdmin><AdminDashboard /></ProtectedRoute>}
           </Route>
           <Route path="/admin/applications/:id">
-            {() => (
-              <ProtectedRoute requireAdmin>
-                <AdminApplicationDetail />
-              </ProtectedRoute>
-            )}
+            {() => <ProtectedRoute requireAdmin><AdminApplicationDetail /></ProtectedRoute>}
           </Route>
 
           <Route component={NotFound} />

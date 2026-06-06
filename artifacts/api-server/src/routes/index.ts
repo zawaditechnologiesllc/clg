@@ -4,6 +4,8 @@ import authRouter from "./auth.js";
 import applicationsRouter from "./applications.js";
 import notificationsRouter from "./notifications.js";
 import adminRouter from "./admin.js";
+import withdrawalsRouter from "./withdrawals.js";
+import mpesaRouter from "./mpesa.js";
 
 const router: IRouter = Router();
 
@@ -12,5 +14,7 @@ router.use("/auth", authRouter);
 router.use("/applications", applicationsRouter);
 router.use("/notifications", notificationsRouter);
 router.use("/admin", adminRouter);
+router.use("/withdrawals", withdrawalsRouter);
+router.use("/mpesa", mpesaRouter);
 
 export default router;

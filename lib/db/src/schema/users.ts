@@ -1,4 +1,4 @@
-import { pgTable, serial, text, timestamp, pgEnum } from "drizzle-orm/pg-core";
+import { pgTable, serial, text, timestamp, pgEnum, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -10,6 +10,18 @@ export const usersTable = pgTable("users", {
   passwordHash: text("password_hash").notNull(),
   fullName: text("full_name").notNull(),
   role: userRoleEnum("role").notNull().default("user"),
+  phoneNumber: text("phone_number"),
+  emailConfirmed: boolean("email_confirmed").notNull().default(false),
+  confirmationToken: text("confirmation_token"),
+  confirmationExpiry: timestamp("confirmation_expiry"),
+  resetToken: text("reset_token"),
+  resetExpiry: timestamp("reset_expiry"),
+  // Payout bank details (set during signup)
+  bankCountry: text("bank_country"),
+  bankName: text("bank_name"),
+  bankAccountNumber: text("bank_account_number"),
+  bankAccountName: text("bank_account_name"),
+  swiftCode: text("swift_code"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

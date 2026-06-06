@@ -1,7 +1,7 @@
 import { Link, useLocation } from "wouter"
 import { Button } from "@/components/ui/button"
 import { useGetMe, useLogout } from "@workspace/api-client-react"
-import { Building2, Menu, X, Bell } from "lucide-react"
+import { Menu, X, ChevronDown } from "lucide-react"
 import { useState } from "react"
 import { useQueryClient } from "@tanstack/react-query"
 import { getGetMeQueryKey } from "@workspace/api-client-react"
@@ -11,118 +11,113 @@ export function Navbar() {
   const { data: user, isLoading } = useGetMe()
   const logoutMutation = useLogout()
   const queryClient = useQueryClient()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false)
 
   const handleLogout = () => {
     logoutMutation.mutate(undefined, {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() })
+        queryClient.clear()
         setLocation("/")
       }
     })
   }
 
-  const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen)
-  
-  const closeMenu = () => setIsMobileMenuOpen(false)
-
   return (
-    <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 w-full bg-[#0B1F3A] border-b border-white/10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between">
+        <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <div className="flex shrink-0 items-center">
-            <Link href="/" onClick={closeMenu} className="flex items-center gap-2 group">
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
-                <Building2 className="h-6 w-6" />
-              </div>
-              <span className="font-display text-xl font-bold tracking-tight text-primary">
-                Cardone <span className="text-accent">Finance</span>
-              </span>
-            </Link>
+          <Link href="/" onClick={() => setIsOpen(false)} className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-[#D4AF37] flex items-center justify-center">
+              <span className="text-[#0B1F3A] font-bold text-lg font-display">C</span>
+            </div>
+            <div className="flex flex-col leading-none">
+              <span className="text-white font-display font-bold text-base tracking-tight">Cardone</span>
+              <span className="text-white/40 text-xs">Loans & Grants</span>
+            </div>
+          </Link>
+
+          {/* Desktop */}
+          <div className="hidden md:flex items-center gap-8">
+            <a href="/#products" className="text-white/60 hover:text-white text-sm font-medium transition-colors">Products</a>
+            <a href="/#how-it-works" className="text-white/60 hover:text-white text-sm font-medium transition-colors">How It Works</a>
+            <a href="/#faq" className="text-white/60 hover:text-white text-sm font-medium transition-colors">FAQ</a>
           </div>
 
-          {/* Desktop Nav */}
-          <div className="hidden md:flex md:items-center md:space-x-8">
-            <Link href="/#how-it-works" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">How it works</Link>
-            <Link href="/#products" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">Products</Link>
-            <Link href="/#faq" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">FAQ</Link>
-            
+          <div className="hidden md:flex items-center gap-3">
             {isLoading ? (
-              <div className="h-10 w-24 animate-pulse rounded-xl bg-muted"></div>
+              <div className="h-9 w-32 rounded-lg bg-white/10 animate-pulse" />
             ) : user ? (
-              <div className="flex items-center gap-4">
-                <Link href={user.role === 'admin' ? "/admin" : "/dashboard"} className="text-sm font-medium text-primary hover:text-primary/80 transition-colors">
-                  {user.role === 'admin' ? "Admin Panel" : "Dashboard"}
+              <>
+                <Link href={user.role === "admin" ? "/admin" : "/dashboard"}>
+                  <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">
+                    {user.role === "admin" ? "Admin Panel" : "My Dashboard"}
+                  </Button>
                 </Link>
-                <Button variant="outline" onClick={handleLogout} className="border-border">
-                  Log out
+                {user.role !== "admin" && (
+                  <Link href="/apply">
+                    <Button size="sm" className="bg-[#D4AF37] hover:bg-[#c49d2f] text-[#0B1F3A] font-bold">Apply Now</Button>
+                  </Link>
+                )}
+                <Button variant="ghost" size="sm" onClick={handleLogout} className="text-white/40 hover:text-white hover:bg-white/10">
+                  Sign Out
                 </Button>
-                <Link href="/apply" className="inline-block">
-                  <Button variant="accent">Apply Now</Button>
-                </Link>
-              </div>
+              </>
             ) : (
-              <div className="flex items-center gap-4">
-                <Link href="/login" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-                  Log in
+              <>
+                <Link href="/login">
+                  <Button variant="ghost" size="sm" className="text-white/70 hover:text-white hover:bg-white/10">Sign In</Button>
                 </Link>
-                <Link href="/register" className="inline-block">
-                  <Button>Get Started</Button>
+                <Link href="/register">
+                  <Button size="sm" className="bg-[#D4AF37] hover:bg-[#c49d2f] text-[#0B1F3A] font-bold">Get Started</Button>
                 </Link>
-              </div>
+              </>
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <div className="flex items-center md:hidden">
-            <button
-              onClick={toggleMenu}
-              className="inline-flex items-center justify-center rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus:outline-none"
-            >
-              <span className="sr-only">Open main menu</span>
-              {isMobileMenuOpen ? (
-                <X className="block h-6 w-6" aria-hidden="true" />
-              ) : (
-                <Menu className="block h-6 w-6" aria-hidden="true" />
-              )}
-            </button>
-          </div>
+          {/* Mobile toggle */}
+          <button onClick={() => setIsOpen(!isOpen)} className="md:hidden p-2 rounded-lg text-white/60 hover:text-white hover:bg-white/10">
+            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
       </div>
 
       {/* Mobile menu */}
-      {isMobileMenuOpen && (
-        <div className="md:hidden glass border-b border-border absolute w-full left-0 top-20 shadow-xl">
-          <div className="space-y-1 px-4 pb-6 pt-2">
-            <Link href="/#how-it-works" onClick={closeMenu} className="block rounded-lg px-3 py-2 text-base font-medium text-foreground hover:bg-muted">How it works</Link>
-            <Link href="/#products" onClick={closeMenu} className="block rounded-lg px-3 py-2 text-base font-medium text-foreground hover:bg-muted">Products</Link>
-            <Link href="/#faq" onClick={closeMenu} className="block rounded-lg px-3 py-2 text-base font-medium text-foreground hover:bg-muted">FAQ</Link>
-            
-            <div className="mt-4 pt-4 border-t border-border">
-              {user ? (
-                <div className="flex flex-col gap-3">
-                  <Link href={user.role === 'admin' ? "/admin" : "/dashboard"} onClick={closeMenu} className="block rounded-lg px-3 py-2 text-base font-medium text-primary hover:bg-muted">
-                    {user.role === 'admin' ? "Admin Panel" : "Dashboard"}
-                  </Link>
-                  <Button variant="outline" className="w-full justify-center" onClick={() => { handleLogout(); closeMenu(); }}>
-                    Log out
+      {isOpen && (
+        <div className="md:hidden bg-[#0B1F3A] border-t border-white/10 px-4 pb-4">
+          <div className="pt-3 space-y-1">
+            {[["/#products", "Products"], ["/#how-it-works", "How It Works"], ["/#faq", "FAQ"]].map(([h, l]) => (
+              <a key={h} href={h} onClick={() => setIsOpen(false)}
+                className="block px-3 py-2.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 text-sm font-medium">{l}</a>
+            ))}
+          </div>
+          <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
+            {user ? (
+              <>
+                <Link href={user.role === "admin" ? "/admin" : "/dashboard"} onClick={() => setIsOpen(false)}>
+                  <Button variant="ghost" className="w-full justify-start text-white/70 hover:text-white hover:bg-white/10">
+                    {user.role === "admin" ? "Admin Panel" : "My Dashboard"}
                   </Button>
-                  <Link href="/apply" onClick={closeMenu} className="block w-full">
-                    <Button variant="accent" className="w-full">Apply Now</Button>
+                </Link>
+                {user.role !== "admin" && (
+                  <Link href="/apply" onClick={() => setIsOpen(false)}>
+                    <Button className="w-full bg-[#D4AF37] hover:bg-[#c49d2f] text-[#0B1F3A] font-bold">Apply Now</Button>
                   </Link>
-                </div>
-              ) : (
-                <div className="flex flex-col gap-3">
-                  <Link href="/login" onClick={closeMenu} className="block">
-                    <Button variant="outline" className="w-full">Log in</Button>
-                  </Link>
-                  <Link href="/register" onClick={closeMenu} className="block">
-                    <Button className="w-full">Get Started</Button>
-                  </Link>
-                </div>
-              )}
-            </div>
+                )}
+                <Button variant="ghost" onClick={() => { handleLogout(); setIsOpen(false) }}
+                  className="w-full justify-start text-white/40 hover:text-white hover:bg-white/10">Sign Out</Button>
+              </>
+            ) : (
+              <>
+                <Link href="/login" onClick={() => setIsOpen(false)}>
+                  <Button variant="ghost" className="w-full text-white/70 hover:text-white hover:bg-white/10">Sign In</Button>
+                </Link>
+                <Link href="/register" onClick={() => setIsOpen(false)}>
+                  <Button className="w-full bg-[#D4AF37] hover:bg-[#c49d2f] text-[#0B1F3A] font-bold">Create Account</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
       )}
