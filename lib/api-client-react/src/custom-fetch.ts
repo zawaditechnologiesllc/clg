@@ -271,11 +271,32 @@ async function parseSuccessBody(
   }
 }
 
+// Prepend the API base URL to relative paths so the generated hooks work when
+// the frontend and backend are on different domains (e.g. Vercel + Render).
+const API_BASE_URL = (
+  typeof import.meta !== "undefined"
+    ? ((import.meta as { env?: Record<string, string> }).env?.VITE_API_URL ?? "")
+    : ""
+).replace(/\/$/, "");
+
+function resolveAbsoluteUrl(input: RequestInfo | URL): RequestInfo | URL {
+  if (!API_BASE_URL) return input;
+  const raw = resolveUrl(input);
+  if (!raw.startsWith("/")) return input;
+  const absolute = `${API_BASE_URL}${raw}`;
+  if (isRequest(input)) {
+    return new Request(absolute, input);
+  }
+  return absolute;
+}
+
 export async function customFetch<T = unknown>(
   input: RequestInfo | URL,
   options: CustomFetchOptions = {},
 ): Promise<T> {
   const { responseType = "auto", headers: headersInit, ...init } = options;
+
+  input = resolveAbsoluteUrl(input);
 
   const method = resolveMethod(input, init.method);
 
