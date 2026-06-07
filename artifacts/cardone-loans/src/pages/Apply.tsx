@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useLocation } from "wouter"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -52,11 +52,59 @@ const PRODUCTS = [
 
 const STEPS = ["Product", "Details", "Documents", "Payment", "Payout & Submit"]
 
+// ── Currency converter ───────────────────────────────────────────────────────
+const TIMEZONE_CURRENCY: Record<string, { code: string; symbol: string; name: string; fallbackRate: number }> = {
+  "Africa/Nairobi":       { code: "KES", symbol: "KES",   name: "Kenyan Shilling",        fallbackRate: 129.5  },
+  "Africa/Kampala":       { code: "UGX", symbol: "UGX",   name: "Ugandan Shilling",        fallbackRate: 3750   },
+  "Africa/Dar_es_Salaam": { code: "TZS", symbol: "TZS",   name: "Tanzanian Shilling",      fallbackRate: 2680   },
+  "Africa/Lagos":         { code: "NGN", symbol: "₦",     name: "Nigerian Naira",          fallbackRate: 1580   },
+  "Africa/Accra":         { code: "GHS", symbol: "GH₵",   name: "Ghanaian Cedi",           fallbackRate: 15.4   },
+  "Africa/Johannesburg":  { code: "ZAR", symbol: "R",     name: "South African Rand",      fallbackRate: 18.6   },
+  "Africa/Addis_Ababa":   { code: "ETB", symbol: "Br",    name: "Ethiopian Birr",          fallbackRate: 113    },
+  "Africa/Cairo":         { code: "EGP", symbol: "E£",    name: "Egyptian Pound",          fallbackRate: 48.5   },
+  "Africa/Casablanca":    { code: "MAD", symbol: "MAD",   name: "Moroccan Dirham",         fallbackRate: 10.1   },
+  "Africa/Dakar":         { code: "XOF", symbol: "CFA",   name: "West African CFA",        fallbackRate: 620    },
+  "Africa/Douala":        { code: "XAF", symbol: "CFA",   name: "Central African CFA",     fallbackRate: 620    },
+  "Africa/Kigali":        { code: "RWF", symbol: "RF",    name: "Rwandan Franc",           fallbackRate: 1380   },
+  "Africa/Lusaka":        { code: "ZMW", symbol: "ZK",    name: "Zambian Kwacha",          fallbackRate: 26.8   },
+  "Africa/Harare":        { code: "ZWL", symbol: "ZWL",   name: "Zimbabwean Dollar",       fallbackRate: 360    },
+  "Africa/Abidjan":       { code: "XOF", symbol: "CFA",   name: "West African CFA",        fallbackRate: 620    },
+  "Africa/Algiers":       { code: "DZD", symbol: "DA",    name: "Algerian Dinar",          fallbackRate: 134    },
+  "Africa/Tunis":         { code: "TND", symbol: "DT",    name: "Tunisian Dinar",          fallbackRate: 3.1    },
+  "America/Toronto":      { code: "CAD", symbol: "CA$",   name: "Canadian Dollar",         fallbackRate: 1.36   },
+  "America/New_York":     { code: "USD", symbol: "$",     name: "US Dollar",               fallbackRate: 1      },
+  "Europe/London":        { code: "GBP", symbol: "£",     name: "British Pound",           fallbackRate: 0.79   },
+}
+
+function detectCurrency() {
+  const tz = Intl.DateTimeFormat().resolvedOptions().timeZone
+  return TIMEZONE_CURRENCY[tz] ?? { code: "KES", symbol: "KES", name: "Kenyan Shilling", fallbackRate: 129.5 }
+}
+
+function useLiveCurrencyRate() {
+  const currency = detectCurrency()
+  const [rate, setRate] = useState<number>(currency.fallbackRate)
+
+  useEffect(() => {
+    if (currency.code === "USD") return
+    fetch(`https://open.er-api.com/v6/latest/USD`)
+      .then(r => r.json())
+      .then(data => {
+        const r = data?.rates?.[currency.code]
+        if (r) setRate(r)
+      })
+      .catch(() => {}) // silently use fallback
+  }, [currency.code])
+
+  return { currency, rate }
+}
+
 interface DocFile { type: string; name: string; path: string }
 
 export function Apply() {
   const [, navigate] = useLocation()
   const { toast } = useToast()
+  const { currency, rate } = useLiveCurrencyRate()
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
 
@@ -253,7 +301,23 @@ export function Apply() {
                       placeholder={`${selectedProduct.min.toLocaleString()} – ${selectedProduct.max.toLocaleString()}`}
                       min={selectedProduct.min} max={selectedProduct.max} className="pl-7 h-12" />
                   </div>
-                  <p className="text-xs text-gray-400 mt-1">Range: {formatCurrency(selectedProduct.min)} – {formatCurrency(selectedProduct.max)}</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-gray-400">Range: {formatCurrency(selectedProduct.min)} – {formatCurrency(selectedProduct.max)} USD</p>
+                    {amount && !isNaN(parseFloat(amount)) && currency.code !== "USD" && (
+                      <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-1.5">
+                        <span className="text-xs text-gray-500">≈</span>
+                        <span className="text-sm font-bold text-emerald-700">
+                          {currency.symbol} {Math.round(parseFloat(amount) * rate).toLocaleString()}
+                        </span>
+                        <span className="text-xs text-gray-400">{currency.code}</span>
+                      </div>
+                    )}
+                  </div>
+                  {currency.code !== "USD" && (
+                    <p className="text-xs text-gray-400 mt-1">
+                      Live rate: 1 USD ≈ {currency.symbol} {rate.toLocaleString(undefined, { maximumFractionDigits: 2 })} {currency.code} · Actual disbursement in USD to your African bank
+                    </p>
+                  )}
                 </div>
               )}
               <Button onClick={handleProductSelect} disabled={!selectedProduct} className="w-full h-12 bg-[#0B1F3A] hover:bg-[#0B1F3A]/90 text-white font-semibold">

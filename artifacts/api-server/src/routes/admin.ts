@@ -7,7 +7,7 @@ import {
   usersTable,
   withdrawalsTable,
 } from "@workspace/db/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, isNotNull, or } from "drizzle-orm";
 import { requireAdmin, AuthenticatedRequest } from "../middlewares/auth.js";
 import { sendApprovalEmail } from "../lib/email.js";
 
@@ -452,6 +452,63 @@ router.get("/users", requireAdmin, async (req: AuthenticatedRequest, res) => {
   } catch (error) {
     console.error("Admin get users error:", error);
     res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
+
+// List applications that have submitted a payment (admin payment review queue)
+router.get("/payments", requireAdmin, async (req: AuthenticatedRequest, res) => {
+  try {
+    const rows = await db
+      .select({ app: applicationsTable, user: { email: usersTable.email, fullName: usersTable.fullName } })
+      .from(applicationsTable)
+      .innerJoin(usersTable, eq(applicationsTable.userId, usersTable.id))
+      .where(or(isNotNull(applicationsTable.paymentCode), isNotNull(applicationsTable.mpesaCheckoutRequestId)))
+      .orderBy(desc(applicationsTable.createdAt));
+    res.json(rows.map(({ app, user }) => parseApp(app, user)));
+  } catch (error) {
+    console.error("Admin get payments error:", error);
+    res.status(500).json({ error: "Failed to fetch payments" });
+  }
+});
+
+// Verify (approve) or reject a submitted payment
+router.post("/payments/:id/verify", requireAdmin, async (req: AuthenticatedRequest, res) => {
+  try {
+    const id = parseInt(String(req.params.id));
+    if (isNaN(id)) { res.status(400).json({ error: "Invalid application ID" }); return; }
+
+    const { action, comment } = req.body;
+    if (!["approve", "reject"].includes(action)) {
+      res.status(400).json({ error: "action must be 'approve' or 'reject'" }); return;
+    }
+
+    const [existing] = await db.select().from(applicationsTable).where(eq(applicationsTable.id, id)).limit(1);
+    if (!existing) { res.status(404).json({ error: "Application not found" }); return; }
+
+    const updates =
+      action === "approve"
+        ? { paymentStatus: "completed" as const, status: "under_review" as const, updatedAt: new Date() }
+        : { paymentStatus: "failed" as const, adminComment: comment || "Payment could not be verified.", updatedAt: new Date() };
+
+    const [updated] = await db
+      .update(applicationsTable)
+      .set(updates)
+      .where(eq(applicationsTable.id, id))
+      .returning();
+
+    await db.insert(notificationsTable).values({
+      userId: existing.userId,
+      message:
+        action === "approve"
+          ? `Your processing fee payment for application #${id} has been verified. Your application is now under expert review.`
+          : `Your processing fee payment for application #${id} could not be verified. Reason: ${comment || "Payment verification failed"}. Please contact info@cardoneloansgrants.org.`,
+      read: false,
+    });
+
+    res.json(parseApp(updated));
+  } catch (error) {
+    console.error("Payment verify error:", error);
+    res.status(500).json({ error: "Failed to process payment verification" });
   }
 });
 
