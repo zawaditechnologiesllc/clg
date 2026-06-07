@@ -11,8 +11,18 @@ declare module "express-session" {
 
 const app: Express = express();
 
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "http://localhost:5173",
+  "http://localhost:3000",
+].filter(Boolean) as string[]
+
 app.use(cors({
-  origin: true,
+  origin: (origin, cb) => {
+    // Allow server-to-server calls (no Origin header) and listed origins
+    if (!origin || allowedOrigins.some(o => origin.startsWith(o))) return cb(null, true)
+    cb(new Error(`CORS: ${origin} not allowed`))
+  },
   credentials: true,
 }));
 app.use(express.json());
