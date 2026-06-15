@@ -288,7 +288,7 @@ export function Apply() {
                       </div>
                     </div>
                     <p className="text-sm text-gray-600">{p.desc}</p>
-                    <div className="mt-3 text-xs font-semibold text-gray-500">Processing fee: KES {p.feeKes.toLocaleString()}</div>
+                    <div className="mt-3 text-xs font-semibold text-gray-500">Processing fee (processed through M-Pesa): KES {p.feeKes.toLocaleString()}</div>
                   </button>
                 ))}
               </div>
@@ -479,8 +479,9 @@ export function Apply() {
                     <div className="font-bold text-lg">APP-{createdAppId}</div>
                   </div>
                   <div className="text-right">
-                    <div className="text-white/60 text-sm">Processing Fee</div>
+                    <div className="text-white/60 text-sm">Processing Fee (via M-Pesa)</div>
                     <div className="text-[#D4AF37] font-display font-bold text-2xl">KES {selectedProduct!.feeKes.toLocaleString()}</div>
+                    <div className="text-white/40 text-xs mt-1">Processed through M-Pesa for Kenyan applicants</div>
                   </div>
                 </div>
                 <div className="mt-4 pt-4 border-t border-white/10">

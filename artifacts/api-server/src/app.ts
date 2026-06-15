@@ -11,20 +11,51 @@ declare module "express-session" {
 
 const app: Express = express();
 
+// Render/Vercel terminate TLS at a proxy. Trust it so express-session issues
+// `secure` cookies and req.protocol reflects the original (https) scheme.
+app.set("trust proxy", 1);
+
+// Origins allowed to make credentialed cross-origin requests. FRONTEND_URL may
+// be a comma-separated list (e.g. apex + www, or a custom + Vercel domain).
+const envOrigins = (process.env.FRONTEND_URL || "")
+  .split(",")
+  .map((o) => o.trim().replace(/\/$/, ""))
+  .filter(Boolean);
+
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
+  ...envOrigins,
+  "https://cardoneloansgrants.org",
+  "https://www.cardoneloansgrants.org",
   "http://localhost:5173",
   "http://localhost:3000",
-].filter(Boolean) as string[]
+];
 
-app.use(cors({
-  origin: (origin, cb) => {
-    // Allow server-to-server calls (no Origin header) and listed origins
-    if (!origin || allowedOrigins.some(o => origin.startsWith(o))) return cb(null, true)
-    cb(new Error(`CORS: ${origin} not allowed`))
-  },
-  credentials: true,
-}));
+function isAllowedOrigin(origin: string): boolean {
+  if (allowedOrigins.includes(origin)) return true;
+  // Allow this project's own subdomains and Vercel preview/production deploys.
+  try {
+    const { hostname } = new URL(origin);
+    if (hostname === "cardoneloansgrants.org") return true;
+    if (hostname.endsWith(".cardoneloansgrants.org")) return true;
+    if (hostname.endsWith(".vercel.app")) return true;
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // Allow non-browser/server-to-server calls (no Origin header) and any
+      // explicitly allowed origin. Disallowed origins get a response without
+      // CORS headers (the browser blocks it) rather than a 500 from a throw.
+      if (!origin || isAllowedOrigin(origin)) return cb(null, true);
+      return cb(null, false);
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

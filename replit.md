@@ -32,12 +32,14 @@ Full-stack fintech platform connecting Kenyan individuals and businesses with U.
 
 ## Products
 
-| Product | Range | Processing Fee |
+Processing fees are charged in KES and processed through M-Pesa (for Kenyan applicants):
+
+| Product | Range | Processing Fee (via M-Pesa) |
 |---|---|---|
-| Personal Grant | $2,000 – $10,000 | $10 |
-| Business Grant | $5,000 – $30,000 | $20 |
-| Personal Loan | $10,000 – $50,000 | $20 |
-| Business Loan | $20,000 – $100,000 | $50 |
+| Personal Grant | $2,000 – $10,000 | KES 1,300 |
+| Business Grant | $5,000 – $30,000 | KES 2,600 |
+| Personal Loan | $10,000 – $50,000 | KES 2,600 |
+| Business Loan | $20,000 – $100,000 | KES 6,500 |
 
 **Loan Pre-approval Logic:** Loans automatically show 65% pre-approval of requested amount immediately after submission.
 

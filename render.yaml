@@ -18,7 +18,7 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: FRONTEND_URL
-        sync: false
+        value: https://cardoneloansgrants.org
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
@@ -40,6 +40,6 @@ services:
       - key: MPESA_PASSKEY
         sync: false
       - key: MPESA_CALLBACK_URL
-        sync: false
+        value: https://cardone-loans-api.onrender.com/api/mpesa/callback
       - key: MPESA_ENV
-        value: sandbox
+        value: production

@@ -187,7 +187,7 @@ export function AdminApplicationDetail() {
           <h2 className="font-bold text-[#0B1F3A] mb-4 flex items-center gap-2"><Wallet className="h-5 w-5 text-[#1FA67A]" /> Payment Information</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             {[
-              ["Processing Fee (KES)", app.processingFeeKes ? `KES ${parseInt(app.processingFeeKes).toLocaleString()}` : "—"],
+              ["Processing Fee (M-Pesa, KES)", app.processingFeeKes ? `KES ${parseInt(app.processingFeeKes).toLocaleString()}` : "—"],
               ["Payment Status", app.paymentStatus],
               ["Confirmation Code", app.paymentCode || "—"],
               ["M-Pesa Reference", app.mpesaCheckoutRequestId || "—"],
